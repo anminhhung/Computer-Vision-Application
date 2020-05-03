@@ -1,11 +1,8 @@
-import cv2
-import numpy as np
-import glob
-import random
-import imutils
 import pytesseract
-
-char_list =  '0123456789ABCDEFGHKLMNPRSTUVXYZ'
+import cv2
+import imutils
+import numpy as np 
+import random
 
 # tunning licensce
 def fine_tune(lp):
@@ -13,14 +10,15 @@ def fine_tune(lp):
     for i in range(len(lp)):
         if lp[i] in char_list:
             newString += lp[i]
-    return newString
+
+char_list =  '0123456789ABCDEFGHKLMNPRSTUVXYZ'
 
 net = cv2.dnn.readNet("yolo.weights", "yolo.cfg")
 
 # Name custom object
 classes = ["License-Plate"]
 # image path
-images_path = ["images/10.jpg"]
+images_path = ["demo.jpg"]
 layer_names = net.getLayerNames()
 output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 colors = np.random.uniform(0, 255, size=(len(classes), 3))
@@ -77,22 +75,20 @@ for img_path in images_path:
             label = str(classes[class_ids[i]])
             color = colors[class_ids[i]]
             cv2.rectangle(img, (x, y), (x+w, y+h), color, 2)
+            #cv2.putText(img, label, (x, y+30), font, 3, color, 3)
 
     license_cropped = img[y:(y+h), x:(x+w), :]
+
     # convert rgb -> gray
     license_cropped = cv2.cvtColor(license_cropped, cv2.COLOR_BGR2GRAY)
-    # bluring
-    license_cropped = cv2.GaussianBlur(license_cropped, (3,3), 0)
+    # # blur
+    # license_cropped = cv2.GaussianBlur(license_cropped, (3,3), 0)
 
-    cv2.imshow("License-Plate", license_cropped)
-    cv2.waitKey(0)
-    LP = pytesseract.image_to_string(license_cropped, lang='eng', config='--psm 6')
-    print("LP before: ", LP)
-    LP = fine_tune(LP)
-    print("LP after: ", LP)
-    cv2.putText(img_tmp, LP,(30,30),cv2.FONT_HERSHEY_COMPLEX,1,(0,255,0),1)
-    cv2.imshow("Recog", img_tmp)
+    cv2.imshow("license Plate", license_cropped)
     cv2.waitKey(0)
 
-
-cv2.destroyAllWindows
+    text = pytesseract.image_to_string(license_cropped, lang='eng', config='--psm 6')
+    print("text: ", text)
+    cv2.putText(img, text,(50, 50), cv2.FONT_HERSHEY_PLAIN, 3.0, (0, 255, 0), lineType=cv2.LINE_AA)
+    cv2.imshow("OCR", img)
+    cv2.waitKey(0)
