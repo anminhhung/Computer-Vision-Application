@@ -2,4 +2,4 @@ filterpy
 imutils==0.5.3
 opencv-python==4.4.0
 nump==1.18.5
-flask==1.1.2
+flask==2.3.2
